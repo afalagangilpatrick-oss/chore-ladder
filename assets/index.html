@@ -1,0 +1,1397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chore Ladder</title>
+<style>
+/* ---------- themes ---------- */
+:root{
+  --fs:1;
+  --r:12px;
+  --gap:12px;
+}
+:root[data-theme="slate"]{
+  --bg:#12161b; --panel:#1a2029; --panel2:#222a35; --line:#303b49;
+  --fg:#e8edf4; --muted:#93a1b3; --accent:#4c8dff; --on-accent:#fff;
+  --ok:#3fbf7f; --near:#e8b53a; --bad:#e3564c; --flag:#ff8a3d;
+ --grace:#d4608d;
+}
+:root[data-theme="paper"]{
+  --bg:#f6f7f9; --panel:#ffffff; --panel2:#eef1f5; --line:#d7dde5;
+  --fg:#171d25; --muted:#5d6b7d; --accent:#2563eb; --on-accent:#fff;
+  --ok:#17804d; --near:#9a6b00; --bad:#c0392b; --flag:#b4430f;
+ --grace:#c2457a;
+}
+:root[data-theme="ink"]{
+  --bg:#000000; --panel:#0c0c0c; --panel2:#161616; --line:#3a3a3a;
+  --fg:#ffffff; --muted:#bdbdbd; --accent:#ffd400; --on-accent:#000;
+  --ok:#00e676; --near:#ffd400; --bad:#ff3b30; --flag:#00e5ff;
+ --grace:#e0559a;
+}
+:root[data-theme="linen"]{
+  --bg:#f5efe6; --panel:#fffaf3; --panel2:#ece2d4; --line:#d8cab5;
+  --fg:#2b2419; --muted:#6d6151; --accent:#a4632a; --on-accent:#fff;
+  --ok:#4f7a3a; --near:#9a7212; --bad:#a6372b; --flag:#1f6f8b;
+ --grace:#b85078;
+}
+:root[data-theme="forest"]{
+  --bg:#101a15; --panel:#17241d; --panel2:#1f3028; --line:#2d4438;
+  --fg:#e6f0e9; --muted:#95ab9e; --accent:#59c08a; --on-accent:#06240f;
+  --ok:#59c08a; --near:#d2b24c; --bad:#dd6459; --flag:#ff9f43;
+ --grace:#d0679a;
+}
+:root[data-theme="plum"]{
+  --bg:#17121d; --panel:#211a2a; --panel2:#2b2236; --line:#3d3049;
+  --fg:#efe8f5; --muted:#a899b5; --accent:#b57bff; --on-accent:#1a0f26;
+  --ok:#5fc48a; --near:#e0b54a; --bad:#e3606b; --flag:#56d8d0;
+ --grace:#e0719e;
+}
+:root[data-theme="ocean"]{
+  --bg:#0d1a21; --panel:#13242e; --panel2:#1a303c; --line:#27475a;
+  --fg:#e3f0f6; --muted:#8fabb9; --accent:#38b6d9; --on-accent:#04222c;
+  --ok:#43c69b; --near:#e2b347; --bad:#e2685f; --flag:#ffa33d;
+ --grace:#d4608d;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:calc(16px * var(--fs));
+  line-height:1.45;
+  /* The Android shell pads by the real system-bar and cutout insets, so the
+     page must not add a second helping. In a plain browser these are 0. */
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 12px 96px}
+header.top{
+  position:sticky; top:0; z-index:20;
+  background:var(--bg);
+  padding-top:8px;
+  border-bottom:1px solid var(--line);
+}
+.brandrow{display:flex;align-items:center;gap:10px;padding:4px 0 10px}
+.brand{font-weight:700;font-size:1.05em;letter-spacing:.2px}
+.spacer{flex:1}
+.who{
+  font-size:.78em;color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:4px 10px;white-space:nowrap;
+}
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{
+  flex:0 0 auto;min-height:40px;padding:8px 14px;border-radius:999px;
+  border:1px solid var(--line); background:var(--panel); color:var(--muted);
+  font-size:.92em; font-family:inherit; cursor:pointer;
+}
+nav.tabs button.on{background:var(--accent);color:var(--on-accent);border-color:transparent;font-weight:650}
+
+h1{font-size:1.25em;margin:18px 0 10px}
+h2{font-size:1.02em;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+p{margin:8px 0}
+.muted{color:var(--muted)}
+.tiny{font-size:.82em}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:10px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{
+  min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--fg);font-size:.95em;font-family:inherit;cursor:pointer;
+}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent;font-weight:650}
+.btn.ghost{background:transparent}
+.btn.danger{background:var(--bad);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.45;cursor:default}
+input,select,textarea{
+  width:100%;min-height:44px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--fg);
+  font-size:1em;font-family:inherit;
+}
+textarea{min-height:92px;resize:vertical}
+label{display:block;margin:10px 0 4px;font-size:.88em;color:var(--muted)}
+
+/* ---------- checklist ---------- */
+.task{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px;margin:8px 0;
+}
+.task .box{
+  flex:0 0 auto;width:30px;height:30px;border-radius:8px;
+  border:2px solid var(--line);background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;
+}
+.task.done .box{background:var(--ok);border-color:var(--ok);color:#06240f}
+.task.near .box{background:var(--near);border-color:var(--near);color:#2a1f00}
+.task .body{flex:1;min-width:0}
+.task .title{font-weight:600}
+.task .detail{font-size:.86em;color:var(--muted);margin-top:2px}
+.task.changed{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.task.changed .title{font-weight:800}
+.task.flagged{border-color:var(--flag);box-shadow:inset 3px 0 0 var(--flag);background:color-mix(in srgb,var(--flag) 10%,var(--panel))}
+.task.flagged .title{font-weight:800;color:var(--flag)}
+.pill{display:inline-block;font-size:.72em;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-right:6px}
+.pill.changed{border-color:var(--accent);color:var(--accent)}
+.pill.flag{border-color:var(--flag);color:var(--flag);font-weight:700}
+.pill.near{border-color:var(--near);color:var(--near)}
+.pill.graced{border-color:var(--grace);color:var(--grace);font-weight:700}
+
+/* ---------- calendar ---------- */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}
+.cal .dow{font-size:.7em;color:var(--muted);text-align:center;padding:2px 0}
+.cal .day{
+  aspect-ratio:1/1;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel2);display:flex;align-items:center;justify-content:center;
+  font-size:.78em;color:var(--muted);cursor:pointer;
+}
+.cal .day.g{background:var(--ok);color:#06240f;border-color:transparent;font-weight:700}
+.cal .day.y{background:var(--near);color:#2a1f00;border-color:transparent;font-weight:700}
+.cal .day.r{background:var(--bad);color:#fff;border-color:transparent;font-weight:700}
+.cal .day.p{background:var(--grace);color:#fff;border-color:transparent;font-weight:700}
+.cal .day.blank{background:transparent;border-color:transparent;cursor:default}
+.cal .day.today{outline:2px solid var(--accent);outline-offset:1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.8em;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.stat .n{font-size:1.9em;font-weight:800;line-height:1.1}
+.stat .k{font-size:.78em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bar{height:8px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent)}
+
+/* ---------- modal ---------- */
+.shade{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;justify-content:center;z-index:50}
+.shade.on{display:flex}
+.sheet{
+  width:100%;max-width:560px;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px 16px 0 0;padding:18px;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  max-height:86vh;overflow:auto;
+}
+@media(min-width:700px){ .shade{align-items:center} .sheet{border-radius:16px} }
+.sheet h3{margin:0 0 6px;font-size:1.1em}
+
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer}
+.sw.on{border-color:var(--fg);transform:scale(1.06)}
+.empty{text-align:center;color:var(--muted);padding:26px 10px;font-size:.92em}
+.grow{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <span class="brand" id="brand">Chore Ladder</span>
+      <span class="spacer"></span>
+      <span class="who" id="who"></span>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+  </header>
+  <main id="main"></main>
+</div>
+<div class="shade" id="shade"><div class="sheet" id="sheet"></div></div>
+
+<script>
+'use strict';
+/* =======================================================================
+   Household v2
+   Event-sourced so two phones that have been apart merge with no central
+   authority: every change is an immutable event stamped with a device id and
+   a Lamport counter, state is a fold over the log in (counter, deviceId)
+   order, and sync is "send me what you have that I don't".
+   Authority is enforced at fold time by device role, not by a UI toggle.
+   ======================================================================= */
+
+const KEY='household-v2';
+const DAY=86400000;
+/** The organizer’s audit of a finished week is due by 9am the next morning. After that the
+ *  week closes itself and the member’s progression moves on whatever the organizer decided or
+ *  didn't. Grace arriving after the bell is ignored unless the organizer reopens the week. */
+const AUDIT_DUE_HOUR=9;
+
+/* ---------- dates (local, never UTC-sliced) ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const dateOf=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12,0,0,0)};
+const today=()=>iso(new Date());
+const addDays=(s,n)=>{const d=dateOf(s);d.setDate(d.getDate()+n);return iso(d)};
+const dow=s=>dateOf(s).getDay();
+const monday=s=>addDays(s,-((dow(s)+6)%7));
+const fmt=s=>dateOf(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const fmtLong=s=>dateOf(s).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+const uid=()=>'x'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+
+/* ---------- persistence ---------- */
+let S=null;
+function blank(){
+  return {
+    deviceId:uid(),
+    role:null,                 // 'A' or 'M' — bound to the device, not a toggle
+    peerRoleA:null,            // device id trusted as A
+    events:[],
+    lamport:0,
+    local:{theme:'slate',accent:null,fontScale:1,
+           notif:{dailyIncomplete:true,dailyTime:'20:00',flagged:true,reviewed:true,
+                  weekClosed:true,auditReady:true,rewardEarned:true,useRelay:false},
+           seenNotifs:{}}
+  };
+}
+function load(){
+  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw); return}}catch(e){}
+  S=blank(); save();
+}
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){ alert('Could not save locally.') } }
+
+/* ---------- events ---------- */
+function emit(kind,payload){
+  S.lamport++;
+  S.events.push({id:uid(),dev:S.deviceId,role:S.role,lam:S.lamport,ts:Date.now(),kind,payload});
+  save(); render(); pushAlarmState();
+}
+function ordered(){
+  return S.events.slice().sort((a,b)=> a.lam-b.lam || String(a.dev).localeCompare(String(b.dev)));
+}
+const A_ONLY=new Set(['task.create','task.update','task.delete','tier.set','tier.promote','flag.add','week.review','reward.set','grace.grant','grace.revoke','reward.revoke','reward.restore','audit.reopen']);
+
+/* ---------- fold: events -> model ---------- */
+function auditDeadlineTs(week){
+  const d=dateOf(addDays(week,7));                 // the Monday after the week ends
+  d.setHours(AUDIT_DUE_HOUR,0,0,0);
+  return d.getTime();
+}
+function model(){
+  const m={tasks:{},tiers:{},passed:-1,comp:{},flags:{},weeks:{},reviews:{},promotions:[],
+           grace:{},revoked:{},reopened:{},lateGrace:{}};
+  for(const e of S.events) if(e.kind==='audit.reopen'&&e.role==='A') m.reopened[e.payload.week]=e.ts;
+  for(const e of ordered()){
+    // Authority: task authoring, flagging, reviews and promotion are the organizer’s alone.
+    if(A_ONLY.has(e.kind) && e.role!=='A') continue;
+    const p=e.payload||{};
+    switch(e.kind){
+      case 'task.create':
+        m.tasks[p.id]={id:p.id,title:p.title,detail:p.detail||'',tier:p.tier|0,
+                       days:p.days||null,order:p.order|0,deleted:false,changedAt:null,
+                       from:p.from||iso(new Date(e.ts)),until:null};
+        break;
+      case 'task.update':{
+        const t=m.tasks[p.id]; if(!t) break;
+        const before=JSON.stringify({t:t.title,d:t.detail,y:t.days,r:t.tier});
+        if('title' in p)t.title=p.title;
+        if('detail' in p)t.detail=p.detail;
+        if('days' in p)t.days=p.days;
+        if('tier' in p)t.tier=p.tier|0;
+        const after=JSON.stringify({t:t.title,d:t.detail,y:t.days,r:t.tier});
+        if(before!==after) t.changedAt=e.ts;      // drives the bold + highlight for the member
+        break;}
+      case 'task.delete':{ const t=m.tasks[p.id]; if(t){t.deleted=true;t.until=p.date||iso(new Date(e.ts))} break;}
+      case 'tier.set':{
+        const t=m.tiers[p.tier]||(m.tiers[p.tier]={tier:p.tier|0,name:'Tier '+p.tier,reward:'',weeks:null});
+        if('name' in p && p.name) t.name=p.name;
+        if('reward' in p) t.reward=p.reward||'';
+        if('weeks' in p) t.weeks = (+p.weeks>0) ? Math.round(+p.weeks) : null;   // null = fall back to the pattern
+        break;}
+      case 'reward.set':{ const t=m.tiers[p.tier]||(m.tiers[p.tier]={tier:p.tier,name:'Tier '+p.tier,reward:'',weeks:0}); t.reward=p.reward; break;}
+      case 'tier.promote':
+        m.promotions.push({tier:p.tier|0,date:p.date,ts:e.ts});
+        break;
+      case 'grace.grant':{
+        const wk=monday(String(p.key).split('@')[1]||today());
+        if(e.ts>auditDeadlineTs(wk) && !m.reopened[wk]){ m.lateGrace[p.key]={key:p.key,at:e.ts}; break; }
+        m.grace[p.key]={key:p.key,note:p.note||'',at:e.ts};
+        break;}
+      case 'reward.revoke': m.revoked[p.tier]={tier:p.tier|0,note:p.note||'',at:e.ts}; break;
+      case 'reward.restore': delete m.revoked[p.tier]; break;
+      case 'grace.revoke': delete m.grace[p.key]; break;
+      case 'comp.set':{
+        const k=p.taskId+'@'+p.date;
+        m.comp[k]={taskId:p.taskId,date:p.date,done:!!p.done,note:p.note||'',at:e.ts,seen:!!p.done};
+        break;}
+      case 'flag.add':
+        m.flags[p.id]={id:p.id,taskId:p.taskId,date:p.date,comment:p.comment||'',at:e.ts,resolved:null,resolveNote:''};
+        break;
+      case 'flag.resolve':{
+        const f=m.flags[p.id]; if(!f) break;
+        f.resolved=p.at||e.ts; f.resolveNote=p.note||'';
+        break;}
+      case 'week.submit':
+        m.weeks[p.week]={week:p.week,submitted:true,at:e.ts,auto:!!p.auto,comment:p.comment||''};
+        break;
+      case 'week.review':
+        m.reviews[p.week]={week:p.week,text:p.text||'',grace:p.grace||[],at:e.ts};
+        break;
+      case 'mark.seen': break;
+    }
+  }
+  return m;
+}
+let M=null, P=null;
+const live=()=>{M=model();P={passed:-1,weeks:{}};P=progression();return M};
+
+/* ---------- task selection ----------
+   The member starts WORKING ON Basics, having passed nothing (passed = -1).
+   Basics always shows tier 0, plus every tier the member has passed — those fold in
+   permanently and never stop counting. The one tier above that is what the member is
+   reaching for; nothing beyond it is ever shown.
+   The *At() variants take the tier explicitly so the weekly replay can judge
+   each past week against the tier the member was on then, not the one the member is on now. */
+function allTasks(){ return Object.values(M.tasks).sort((a,b)=>a.tier-b.tier||a.order-b.order) }
+function liveTasks(){ return allTasks().filter(t=>!t.deleted) }
+/** A task never applies before the day the organizer wrote it, nor after the day the organizer removed
+ *  it. Without this, adding a task today would paint every past week red. */
+function scheduled(t,date){
+  if(t.from && date<t.from) return false;
+  if(t.until && date>t.until) return false;
+  return !t.days || t.days.length===0 || t.days.includes(dow(date));
+}
+function basicsAt(date,passed){ return allTasks().filter(t=>(t.tier===0||t.tier<=passed) && scheduled(t,date)) }
+function reachAt(date,passed){ const w=passed+1; return w===0?[]:allTasks().filter(t=>t.tier===w && scheduled(t,date)) }
+function tasksAt(date,passed){ return basicsAt(date,passed).concat(reachAt(date,passed)) }
+function passedOn(date){ const wk=monday(date); return (P&&P.weeks&&P.weeks[wk]) ? P.weeks[wk].passed : (P?P.passed:-1) }
+function basicsFor(date){ return basicsAt(date,passedOn(date)) }
+function nextTierTasks(date){ return reachAt(date,passedOn(date)) }
+function visibleFor(date){ return tasksAt(date,passedOn(date)) }
+
+/* ---------- status of one task instance ---------- */
+function compOf(taskId,date){ return M.comp[taskId+'@'+date]||null }
+function flagsOf(taskId,date){ return Object.values(M.flags).filter(f=>f.taskId===taskId&&f.date===date) }
+/**
+ * The rule, exactly: a task is a miss only if it was not completed, or it was
+ * flagged and the flag was never addressed. A flag raised and fixed the same
+ * day is a NEAR MISS — yellow, and it still counts as completed.
+ */
+function statusOf(taskId,date){
+  const c=compOf(taskId,date), fl=flagsOf(taskId,date);
+  const open=fl.filter(f=>!f.resolved);
+  const past=date<today();
+  if(open.length) return past?'miss':'flagged';
+  if(!c||!c.done) return past?'miss':'todo';
+  if(fl.length) return 'near';
+  return 'done';
+}
+/** The calendar rule, plainly:
+ *    red    — a miss the organizer did not grace
+ *    pink   — a miss the organizer gave grace for
+ *    yellow — the member was flagged that day, quality caught
+ *    green  — nothing wrong
+ *  Red outranks pink, pink outranks yellow. Today stays uncoloured until it is
+ *  over, so an unfinished day never reads as green.                          */
+function dayStatus(date){
+  if(date>today()) return '';
+  const list=tasksAt(date,passedOn(date));
+  if(!list.length) return '';
+  let miss=false, graced=false, flagged=false;
+  for(const t of list){
+    if(statusOf(t.id,date)==='miss'){ isGraced(t.id,date) ? graced=true : miss=true }
+    if(flagsOf(t.id,date).length) flagged=true;
+  }
+  if(miss) return 'r';
+  if(graced) return 'p';
+  if(date===today()) return flagged?'y':'';
+  return flagged?'y':'g';
+}
+/** Stats run over everything assigned, basics and the tier the member is reaching for. */
+function statsOver(from,to){
+  let total=0,done=0,near=0,miss=0;
+  for(let d=from; d<=to; d=addDays(d,1)){
+    if(d>today()) break;
+    for(const t of visibleFor(d)){
+      total++;
+      const s=statusOf(t.id,d);
+      if(s==='near'){done++;near++}
+      else if(s==='done')done++;
+      else if(s==='miss')miss++;
+    }
+  }
+  return {total,done,near,miss,pct: total?Math.round(done/total*100):0};
+}
+function firstDate(){
+  let f=null;
+  for(const e of S.events) if(e.kind==='comp.set'&&(!f||e.payload.date<f)) f=e.payload.date;
+  return f||today();
+}
+
+/* ---------- tier progression ----------
+   The rules, exactly:
+     weeks required to pass a tier = floor(tier/2)+1
+       Basics 1, T1 1, T2 2, T3 2, T4 3, T5 3, and onward in pairs.
+     Any week holding a miss the organizer did not grace restarts THAT tier's run.
+     It is not a demotion. Four such weeks running with no clean week between
+     them is, and it drops the member exactly one tier, never below Basics.
+   This is a replay over finished weeks, so both phones reach the same answer
+   without either having to be the device that noticed.                      */
+/** The pattern the organizer set: Basics 1, T1 1, T2 2, T3 2, T4 3, T5 3, onward in pairs. */
+function patternWeeks(tier){ return Math.floor(Math.max(0,tier)/2)+1 }
+/** What a tier actually needs: the organizer’s number if one was typed, otherwise the pattern. */
+function needWeeks(tier){ const t=M.tiers[tier]; return (t&&t.weeks>0)?t.weeks:patternWeeks(tier) }
+function isOverridden(tier){ const t=M.tiers[tier]; return !!(t&&t.weeks>0&&t.weeks!==patternWeeks(tier)) }
+function reqWeeks(tier){ return needWeeks(tier) }
+function isGraced(taskId,date){ return !!M.grace[taskId+'@'+date] }
+function missesAt(week,passed){
+  const out=[];
+  for(let i=0;i<7;i++){ const d=addDays(week,i); if(d>today())break;
+    for(const t of tasksAt(d,passed)){
+      if(statusOf(t.id,d)==='miss') out.push({taskId:t.id,date:d,title:t.title,graced:isGraced(t.id,d)});
+    }}
+  return out;
+}
+function hasTasksAt(week,passed){
+  for(let i=0;i<7;i++){ const d=addDays(week,i); if(d>today())break;
+    if(tasksAt(d,passed).length) return true; }
+  return false;
+}
+function progression(){
+  const promos=ordered().filter(e=>e.kind==='tier.promote'&&e.role==='A')
+                        .map(e=>({tier:e.payload.tier|0,date:e.payload.date}))
+                        .sort((a,b)=>a.date.localeCompare(b.date));
+  let passed=-1, streak=0, badRun=0, pi=0;
+  const history=[], weeks={};
+  const takePromos=upto=>{
+    while(pi<promos.length && promos[pi].date<=upto){
+      if(promos[pi].tier===passed+1){ passed++; streak=0; badRun=0;
+        history.push({kind:'promote',tier:passed,date:promos[pi].date}); }
+      pi++;
+    }
+  };
+  const lastDone=addDays(monday(today()),-7);     // only finished weeks judge the member
+  for(let w=monday(firstDate()); w<=lastDone; w=addDays(w,7)){
+    // A promotion takes effect the week AFTER the organizer grants it, so the week the member
+    // just earned is never retroactively judged against the tier it won the member.
+    takePromos(addDays(w,-1));
+    if(!hasTasksAt(w,passed)) continue;
+    const ms=missesAt(w,passed);
+    const clean=ms.every(m=>m.graced);
+    weeks[w]={passed,clean,misses:ms};
+    if(clean){ streak++; badRun=0; }
+    else{
+      streak=0; badRun++;
+      history.push({kind:'bad',week:w,run:badRun});
+      if(badRun>=4){
+        if(passed>=0){ passed--; history.push({kind:'demote',to:passed,week:w}); }
+        streak=0; badRun=0;
+      }
+    }
+  }
+  takePromos('9999-12-31');
+  const cur=monday(today());
+  weeks[cur]={passed,clean:null,misses:missesAt(cur,passed)};   // in progress
+  const working=passed+1, need=needWeeks(working);
+  return {passed,working,streak,badRun,need,weeks,history,
+          eligible:streak>=need, toDemotion:Math.max(0,4-badRun)};
+}
+/** open  — the week is finished and the organizer still has until 9am tomorrow
+ *  reviewed — the organizer posted a review in time
+ *  closed — the bell rang without a review; the member’s progression stands as computed */
+function auditState(week){
+  if(addDays(week,6)>=today()) return 'running';
+  if(M.reviews[week]) return 'reviewed';
+  if(M.reopened[week]) return 'open';
+  return Date.now()>auditDeadlineTs(week) ? 'closed' : 'open';
+}
+function graceLocked(week){ return auditState(week)==='closed' }
+function lastFinishedWeek(){ return addDays(monday(today()),-7) }
+
+/* ---------- notifications ----------
+   Raised locally on whichever phone they belong to. The Android layer drains
+   this queue on open, after a sync, and from its alarms; in the browser it is
+   just a preview. Each has a stable id so it fires once.                     */
+function pendingNotifications(){
+  const out=[], N=S.local.notif||{};
+  const w=lastFinishedWeek();
+  if(S.role==='A'){
+    const st=auditState(w);
+    if(N.auditReady!==false && st==='open'){
+      const due=new Date(auditDeadlineTs(w));
+      out.push({id:'audit:'+w, to:'A', kind:'auditReady',
+        title:'Week audit ready',
+        body:`Week of ${fmt(w)} is finished — ${weekMisses(w).filter(m=>!m.graced).length} ungraced miss(es). `
+            +`Review by ${due.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} tomorrow or it closes itself.`});
+    }
+    if(N.auditReady!==false && st==='closed' && !M.reviews[w]){
+      out.push({id:'auditclosed:'+w, to:'A', kind:'auditClosed',
+        title:'Week closed without your review',
+        body:`Week of ${fmt(w)} closed at 9am. The member’s progression moved on what was recorded.`});
+    }
+    if(N.reviewed!==false){
+      const sub=M.weeks[w];
+      if(sub && !sub.auto) out.push({id:'submitted:'+w, to:'A', kind:'submitted',
+        title:'The member submitted the week', body:`Week of ${fmt(w)} is in for review.`});
+    }
+  } else {
+    if(N.rewardEarned!==false){
+      for(const r of rewardLedger()) if(r.state==='held' && r.earned)
+        out.push({id:'reward:'+r.tier+':'+r.earned, to:'M', kind:'rewardEarned',
+          title:'You earned a reward',
+          body:`${r.name} — ${r.reward||'the organizer has not written this one yet'}`});
+    }
+    if(N.flagged!==false){
+      for(const f of Object.values(M.flags)) if(!f.resolved)
+        out.push({id:'flag:'+f.id, to:'M', kind:'flagged',
+          title:'Flagged on quality', body:f.comment||'Check the task.'});
+    }
+    if(N.reviewed!==false && M.reviews[w])
+      out.push({id:'review:'+w, to:'M', kind:'reviewed',
+        title:'The organizer reviewed your week', body:M.reviews[w].text.slice(0,140)});
+  }
+  return out;
+}
+/** The compact summary the Android alarms read. Everything in it is computed
+ *  here; nothing is re-derived natively. */
+function alarmSummary(){
+  const N=S.local.notif||{}, d=today(), lw=lastFinishedWeek();
+  let open=0;
+  for(const t of visibleFor(d)){ const st=statusOf(t.id,d); if(st==='todo'||st==='flagged') open++ }
+  return {
+    role:S.role||'',
+    dailyTime:N.dailyTime||'20:00',
+    dailyIncomplete:N.dailyIncomplete!==false,
+    auditReady:N.auditReady!==false,
+    openToday:open,
+    ungracedLastWeek:weekMisses(lw).filter(m=>!m.graced).length,
+    lastWeekReviewed:!!M.reviews[lw]
+  };
+}
+function pushAlarmState(){
+  if(window.Native&&Native.setAlarmState){
+    try{ Native.setAlarmState(JSON.stringify(alarmSummary())) }catch(e){}
+  }
+}
+
+/** Fire anything not yet fired on this phone. */
+function raiseNotifications(){
+  const seen=S.local.seenNotifs||(S.local.seenNotifs={});
+  let changed=false;
+  for(const n of pendingNotifications()){
+    if(seen[n.id]) continue;
+    seen[n.id]=Date.now(); changed=true;
+    if(window.Native&&Native.notify) Native.notify(n.kind,n.title,n.body);
+  }
+  if(changed) save();
+}
+
+function weekMisses(week){ return (P&&P.weeks&&P.weeks[week]) ? P.weeks[week].misses : missesAt(week,P?P.passed:-1) }
+function weekClean(week){ return weekMisses(week).every(m=>m.graced) }
+function nextTierDef(){ return M.tiers[P.working]||null }
+
+/* ---------- rewards the member has actually got ----------
+   A reward is earned the day the organizer promotes the member past its tier. It is lost the
+   moment a demotion drops the member back below that tier, and the organizer can take one back
+   or hand it back by hand at any time. Both phones see the same ledger.     */
+function rewardLedger(){
+  const earnedAt={}, lostAt={};
+  let high=-1;
+  for(const h of P.history){
+    if(h.kind==='promote'){ if(!earnedAt[h.tier]) earnedAt[h.tier]=h.date;
+      delete lostAt[h.tier]; if(h.tier>high) high=h.tier; }
+    if(h.kind==='demote'){ const lost=h.to+1; if(earnedAt[lost]) lostAt[lost]=h.week; }
+  }
+  const out=[];
+  for(let t=0;t<=Math.max(high,5);t++){
+    const def=M.tiers[t]||{};
+    if(!(t in earnedAt) && !def.reward) continue;
+    const rev=M.revoked[t];
+    let state='locked';
+    if(t in earnedAt) state = rev ? 'revoked' : (t<=P.passed ? 'held' : 'lost');
+    out.push({tier:t, name:def.name||('Tier '+t), reward:def.reward||'',
+              earned:earnedAt[t]||null, lost:lostAt[t]||null, state,
+              revokeNote:rev?rev.note:''});
+  }
+  return out.reverse();     // newest first
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+let TAB='todo', CAL='week', CALANCHOR=today();
+
+function tabsFor(){
+  return S.role==='A'
+    ? [['todo','To-do'],['dash','Dashboard'],['rules','Rules'],['rewards','Rewards'],['reviews','Reviews'],['setup','Tasks'],['set','Settings']]
+    : [['todo','To-do'],['dash','Dashboard'],['rules','Rules'],['rewards','Rewards'],['reviews','Reviews'],['set','Settings']];
+}
+function applyLocal(){
+  const r=document.documentElement;
+  r.setAttribute('data-theme',S.local.theme||'slate');
+  r.style.setProperty('--fs',S.local.fontScale||1);
+  if(S.local.accent) r.style.setProperty('--accent',S.local.accent);
+  else r.style.removeProperty('--accent');
+}
+function render(){
+  applyLocal();
+  if(!S.role){ return renderSetup() }
+  live();
+  $('who').textContent = S.role==='A' ? 'You · the organizer' : 'You · the member';
+  const nav=$('tabs'); nav.innerHTML='';
+  for(const [k,label] of tabsFor()){
+    const b=document.createElement('button');
+    b.textContent=label; if(TAB===k)b.className='on';
+    b.onclick=()=>{TAB=k;render()};
+    nav.appendChild(b);
+  }
+  const m=$('main'); m.innerHTML='';
+  const draw=({todo:viewTodo,dash:viewDash,rules:viewRules,rewards:viewRewards,
+                reviews:viewReviews,setup:viewTaskAdmin,set:viewSettings}[TAB]||viewTodo);
+  try{
+    draw(m);
+  }catch(err){
+    // Without this a single bad line leaves a heading and nothing under it,
+    // which reads as "the feature is missing" rather than "something broke".
+    console.error('render '+TAB+': '+(err&&err.stack||err));
+    const box=el('div','card');
+    box.style.borderColor='var(--bad)';
+    box.innerHTML=`<b style="color:var(--bad)">This screen hit an error.</b>
+      <p class="tiny muted">${esc(err&&err.message||String(err))}</p>
+      <p class="tiny muted">Nothing is lost — your record is intact. Report this message as a bug.</p>`;
+    m.appendChild(box);
+  }
+}
+
+/* ---------- first run: which phone is this ---------- */
+function renderSetup(){
+  $('who').textContent='';
+  $('tabs').innerHTML='';
+  $('main').innerHTML=`
+    <h1>Which phone is this?</h1>
+    <p class="muted">This is set once per phone and is not a switch inside the app.
+    It decides what this device is allowed to do, and it travels with every change
+    this phone makes so the other phone can tell them apart.</p>
+    <div class="card">
+      <button class="btn primary" style="width:100%" id="asA">This is the organizer’s phone</button>
+      <p class="tiny muted">Writes the tasks and rewards, flags the member’s work, reviews the week, promotes tiers.</p>
+    </div>
+    <div class="card">
+      <button class="btn" style="width:100%" id="asM">This is the member’s phone</button>
+      <p class="tiny muted">Checks tasks off, fixes flags, submits the week with comments.</p>
+    </div>`;
+  $('asA').onclick=()=>{S.role='A';S.peerRoleA=S.deviceId;save();seedTiers();render()};
+  $('asM').onclick=()=>{S.role='M';save();render()};
+}
+function seedTiers(){
+  // Structure only — no prepopulated chores. The organizer writes every task.
+  for(let i=0;i<=5;i++){
+    S.lamport++;
+    S.events.push({id:uid(),dev:S.deviceId,role:'A',lam:S.lamport,ts:Date.now(),kind:'tier.set',
+      payload:{tier:i,name:i===0?'Basics':'Tier '+i,reward:''}});
+  }
+  save();
+}
+
+/* ======================= TO-DO ======================= */
+function viewTodo(root){
+  const d=today();
+  const basics=basicsFor(d), next=nextTierTasks(d);
+  const h=document.createElement('div');
+  h.innerHTML=`<h1>${fmtLong(d)}</h1>`;
+  root.appendChild(h);
+
+  if(!liveTasks().length){
+    root.insertAdjacentHTML('beforeend',
+      `<div class="empty">No tasks yet.${S.role==='A'?' Open the <b>Tasks</b> tab to write them.':' The organizer has not added any yet.'}</div>`);
+    return;
+  }
+  section(root,'Basics', basics, d, 'Owed regardless of any reward.');
+  const nd=nextTierDef();
+  if(next.length) section(root, nd? nd.name : 'Tier '+P.working, next, d,
+      nd&&nd.reward ? 'Working toward: '+nd.reward : 'Working toward the next reward.');
+
+  const openFlags=Object.values(M.flags).filter(f=>!f.resolved&&f.date===d);
+  if(openFlags.length && S.role==='M'){
+    root.insertAdjacentHTML('afterbegin',
+      `<div class="card" style="border-color:var(--flag)">
+         <b style="color:var(--flag)">${openFlags.length} flagged on quality</b>
+         <p class="tiny muted">Done, but not to standard. Fix and resubmit before midnight and it stays a near miss, not a miss.</p>
+       </div>`);
+  }
+}
+function section(root,title,list,date,sub){
+  const wrap=document.createElement('div');
+  wrap.innerHTML=`<h2>${esc(title)}</h2>${sub?`<p class="tiny muted" style="margin-top:-4px">${esc(sub)}</p>`:''}`;
+  root.appendChild(wrap);
+  if(!list.length){ wrap.insertAdjacentHTML('beforeend','<p class="tiny muted">Nothing here today.</p>'); return }
+  for(const t of list) wrap.appendChild(taskRow(t,date));
+}
+function taskRow(t,date){
+  const st=statusOf(t.id,date);
+  const fl=flagsOf(t.id,date), open=fl.filter(f=>!f.resolved);
+  const el=document.createElement('div');
+  el.className='task'+(st==='done'?' done':'')+(st==='near'?' near':'')
+    +(open.length?' flagged':'')+(t.changedAt?' changed':'');
+  const mark = st==='done'||st==='near' ? '✓' : '';
+  el.innerHTML=`
+    <div class="box">${mark}</div>
+    <div class="body">
+      <div class="title">${esc(t.title)}</div>
+      ${t.detail?`<div class="detail">${esc(t.detail)}</div>`:''}
+      <div style="margin-top:6px">
+        ${t.changedAt?'<span class="pill changed">EDITED — re-read</span>':''}
+        ${open.length?'<span class="pill flag">FLAGGED</span>':''}
+        ${st==='near'?'<span class="pill near">near miss</span>':''}
+      </div>
+      ${open.length?`<div class="tiny" style="color:var(--flag);margin-top:6px">${open.map(f=>esc(f.comment)).join('<br>')}</div>`:''}
+    </div>`;
+  el.onclick=()=>openTask(t,date);
+  return el;
+}
+
+/* confirmation prompt before anything is submitted as complete */
+function openTask(t,date){
+  const st=statusOf(t.id,date);
+  const fl=flagsOf(t.id,date), open=fl.filter(f=>!f.resolved);
+  const body=[];
+  body.push(`<h3>${esc(t.title)}</h3>`);
+  if(t.detail) body.push(`<p class="muted">${esc(t.detail)}</p>`);
+  if(t.changedAt) body.push(`<p class="tiny" style="color:var(--accent)"><b>This task was edited.</b> Read it again before you tick it.</p>`);
+  if(open.length){
+    body.push(`<div class="card" style="border-color:var(--flag)">
+      <b style="color:var(--flag)">Flagged on quality</b>
+      ${open.map(f=>`<p class="tiny">${esc(f.comment)}</p>`).join('')}
+      ${S.role==='M'?'<p class="tiny muted">It was done, but not to standard. Fix it and mark the flag addressed. Before midnight it stays a near miss; left unaddressed it becomes a miss.</p>':''}
+    </div>`);
+  }
+  sheet(body.join(''), s=>{
+    if(S.role==='M'){
+      if(open.length){
+        const n=input(s,'What did you change?','');
+        btn(s,'Mark flag addressed','primary',()=>{
+          open.forEach(f=>emit('flag.resolve',{id:f.id,note:n.value,at:Date.now()}));
+          close();
+        });
+      }
+      if(st==='todo'||st==='miss'){
+        btn(s,'Mark done','primary',()=>confirmDone(t,date));
+      } else if(st==='done'||st==='near'){
+        btn(s,'Undo — not actually done','ghost',()=>{ emit('comp.set',{taskId:t.id,date,done:false}); close() });
+      }
+    } else {
+      if(st==='done'||st==='near'){
+        const c=input(s,'What was wrong with the quality?','');
+        btn(s,'Flag it','danger',()=>{
+          if(!c.value.trim()){alert('Say what is wrong with it.');return}
+          emit('flag.add',{id:uid(),taskId:t.id,date,comment:c.value.trim()}); close();
+        });
+      } else {
+        s.insertAdjacentHTML('beforeend','<p class="tiny muted">Not completed yet — nothing to flag.</p>');
+      }
+    }
+    btn(s,'Close','ghost',close);
+  });
+}
+function confirmDone(t,date){
+  sheet(`<h3>Confirm</h3>
+    <p>Mark <b>${esc(t.title)}</b> as done?</p>
+    ${t.detail?`<p class="muted tiny">${esc(t.detail)}</p>`:''}
+    <p class="tiny muted">Tick it only if it is actually finished. The organizer can flag it, and an
+    unaddressed flag counts as a miss.</p>`, s=>{
+      btn(s,'Yes, it is done','primary',()=>{ emit('comp.set',{taskId:t.id,date,done:true}); close() });
+      btn(s,'Cancel','ghost',close);
+  });
+}
+
+/* ======================= DASHBOARD ======================= */
+function viewDash(root){
+  const wk=monday(today());
+  const w=statsOver(wk,addDays(wk,6));
+  const a=statsOver(firstDate(),today());
+  root.insertAdjacentHTML('beforeend',`
+    <h1>Dashboard</h1>
+    <h2>This week</h2>
+    <div class="stats">
+      ${stat(w.done+' / '+w.total,'completed')}
+      ${stat(String(w.miss),'misses')}
+      ${stat(String(w.near),'near misses')}
+      ${stat(w.pct+'%','rate')}
+    </div>
+    <div class="bar"><i style="width:${w.pct}%"></i></div>
+    <h2>All time</h2>
+    <div class="stats">
+      ${stat(a.done+' / '+a.total,'completed')}
+      ${stat(String(a.miss),'misses')}
+      ${stat(String(a.near),'near misses')}
+      ${stat(a.pct+'%','rate')}
+    </div>
+    <div class="bar"><i style="width:${a.pct}%"></i></div>`);
+  root.insertAdjacentHTML('beforeend',`<h2>Calendar</h2>`);
+  const ctl=document.createElement('div'); ctl.className='row';
+  btn(ctl, CAL==='week'?'Week':'Month','', ()=>{CAL=CAL==='week'?'month':'week';render()});
+  btn(ctl,'‹','ghost',()=>{CALANCHOR=addDays(CALANCHOR,CAL==='week'?-7:-28);render()});
+  btn(ctl,'›','ghost',()=>{CALANCHOR=addDays(CALANCHOR,CAL==='week'?7:28);render()});
+  btn(ctl,'Today','ghost',()=>{CALANCHOR=today();render()});
+  root.appendChild(ctl);
+  root.appendChild(calendar());
+  root.insertAdjacentHTML('beforeend',`
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>no misses</span>
+      <span><i style="background:var(--near)"></i>flagged — quality caught</span>
+      <span><i style="background:var(--grace)"></i>graced — a miss you let go</span>
+      <span><i style="background:var(--bad)"></i>a miss</span>
+    </div>`);
+}
+function stat(n,k){ return `<div class="stat"><div class="n">${esc(n)}</div><div class="k">${esc(k)}</div></div>` }
+function calendar(){
+  const g=document.createElement('div'); g.className='cal';
+  for(const d of ['M','T','W','T','F','S','S']) g.insertAdjacentHTML('beforeend',`<div class="dow">${d}</div>`);
+  let days=[];
+  if(CAL==='week'){ const s=monday(CALANCHOR); for(let i=0;i<7;i++) days.push(addDays(s,i)); }
+  else{
+    const a=dateOf(CALANCHOR), first=iso(new Date(a.getFullYear(),a.getMonth(),1));
+    const lead=(dow(first)+6)%7; for(let i=0;i<lead;i++) days.push(null);
+    const n=new Date(a.getFullYear(),a.getMonth()+1,0).getDate();
+    for(let i=0;i<n;i++) days.push(addDays(first,i));
+  }
+  for(const d of days){
+    if(!d){ g.insertAdjacentHTML('beforeend','<div class="day blank"></div>'); continue }
+    const st=dayStatus(d);
+    const el=document.createElement('div');
+    el.className='day '+st+(d===today()?' today':'');
+    el.textContent=d.slice(8).replace(/^0/,'');
+    el.onclick=()=>dayDetail(d);
+    g.appendChild(el);
+  }
+  return g;
+}
+function dayDetail(date){
+  const list=visibleFor(date);
+  const rows=list.map(t=>{
+    const s=statusOf(t.id,date);
+    const c={done:'var(--ok)',near:'var(--near)',miss:'var(--bad)',flagged:'var(--flag)',todo:'var(--muted)'}[s];
+    return `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:7px 0">
+      <span>${esc(t.title)}</span><b style="color:${c}">${s}</b></div>`;
+  }).join('')||'<p class="muted tiny">Nothing scheduled.</p>';
+  sheet(`<h3>${fmtLong(date)}</h3>${rows}`,s=>btn(s,'Close','ghost',close));
+}
+
+/* ======================= RULES ======================= */
+function viewRules(root){
+  const nd=nextTierDef();
+  const workName = P.working===0 ? 'Basics' : ((M.tiers[P.working]||{}).name||('Tier '+P.working));
+  root.insertAdjacentHTML('beforeend','<h1>Rules</h1>');
+
+  root.insertAdjacentHTML('beforeend',`
+    <div class="card">
+      <h2 style="margin-top:0">Where the member is</h2>
+      <p>Working on <b>${esc(workName)}</b>.</p>
+      ${P.passed>=0?`<p class="tiny muted">Passed: ${[...Array(P.passed+1).keys()]
+          .map(i=>esc((M.tiers[i]||{}).name||('Tier '+i))).join(' · ')}. Those are part of Basics now
+          and never stop counting.</p>`
+        :'<p class="tiny muted">Nothing passed yet. Basics comes first.</p>'}
+      <p class="tiny muted">Everything under Basics is owed regardless of any reward. It is not
+      earned and it is not traded.</p>
+    </div>`);
+
+  root.insertAdjacentHTML('beforeend',`
+    <div class="card">
+      <h2 style="margin-top:0">To pass ${esc(workName)}</h2>
+      <p><b>${P.need} clean week${P.need===1?'':'s'} in a row.</b>
+         <span class="muted tiny">${isOverridden(P.working)?'— you set this':'— your pattern'}</span></p>
+      <div class="bar"><i style="width:${Math.min(100,Math.round(P.streak/P.need*100))}%"></i></div>
+      <p class="tiny muted">${P.streak} of ${P.need} clean.</p>
+      <p>A week is clean when every task the member was given that week was done, and anything you
+         flagged was fixed. A miss you give grace for does not count against the member.</p>
+      <p><b>One week with a miss you did not grace and ${esc(workName)} starts over.</b>
+         The counter goes back to nothing. The member does not drop a tier for it.</p>
+      <p><b>Four such weeks in a row with no clean week between them and the member drops one tier.</b></p>
+      ${P.badRun>0?`<p style="color:var(--bad)"><b>${P.badRun} bad week${P.badRun===1?'':'s'} in a row.</b>
+          ${P.passed>=0?`${P.toDemotion} more and the member drops a tier.`:'Nothing below Basics to drop to.'}</p>`:''}
+    </div>`);
+
+  root.insertAdjacentHTML('beforeend',`
+    <div class="card" style="border-color:var(--accent)">
+      <h2 style="margin-top:0">The reward for ${esc(workName)}</h2>
+      ${nd&&nd.reward? `<p style="font-size:1.08em">${esc(nd.reward)}</p>`
+        : `<p class="muted">${S.role==='A'?'Not written yet — set it below.':'The organizer has not written this one yet.'}</p>`}
+    </div>`);
+
+  if(S.role==='A'){
+    const c=document.createElement('div'); c.className='card';
+    const r=input(c,'Reward for '+workName, nd?nd.reward:'','textarea');
+    const wk=input(c,'Clean weeks required for '+workName, (nd&&nd.weeks>0)?String(nd.weeks):'', 'number');
+    wk.placeholder=patternWeeks(P.working)+' (your pattern)';
+    c.insertAdjacentHTML('beforeend',
+      `<p class="tiny muted">Leave it blank and it follows your pattern — ${patternWeeks(P.working)} week${patternWeeks(P.working)===1?'':'s'} for this one.
+       Type a number to override just this tier.</p>`);
+    btn(c,'Save','primary',()=>{
+      emit('tier.set',{tier:P.working,name:workName,reward:r.value.trim(),
+                       weeks: wk.value.trim()===''?null:Math.max(1,Math.round(+wk.value)||1)});
+    });
+    if(P.eligible){
+      btn(c,'Promote the member past '+workName,'primary',()=>{
+        sheet(`<h3>Promote?</h3><p>${esc(workName)} tasks become part of Basics permanently and
+               the next tier opens.</p>`,sh=>{
+          btn(sh,'Confirm','primary',()=>{emit('tier.promote',{tier:P.working,date:today()});close()});
+          btn(sh,'Cancel','ghost',close);
+        });
+      });
+      c.insertAdjacentHTML('beforeend','<p class="tiny" style="color:var(--ok)"><b>Eligible.</b> It only happens when you confirm it.</p>');
+    }
+    root.appendChild(c);
+
+    root.insertAdjacentHTML('beforeend','<h2>The ladder</h2>');
+    let rows='';
+    for(let i=0;i<=5;i++){
+      const nm=(M.tiers[i]||{}).name||('Tier '+i);
+      const state = i<=P.passed?'passed' : i===P.working?'current' : 'locked';
+      rows+=`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0">
+        <span>${esc(nm)}</span>
+        <span class="muted tiny">${needWeeks(i)} week${needWeeks(i)===1?'':'s'}${isOverridden(i)?' *':''} · ${state}</span></div>`;
+    }
+    root.insertAdjacentHTML('beforeend','<div class="card">'+rows+
+      '<p class="tiny muted" style="margin-top:8px">* you set this one by hand. The rest follow your pattern: 1, 1, 2, 2, 3, 3, and up in pairs.</p></div>');
+  }
+
+  const hist=P.history.filter(h=>h.kind!=='bad').slice(-8).reverse();
+  if(hist.length){
+    root.insertAdjacentHTML('beforeend','<h2>History</h2>'+hist.map(h=>
+      h.kind==='promote'
+        ? `<div class="card"><b style="color:var(--ok)">Passed ${esc((M.tiers[h.tier]||{}).name||('Tier '+h.tier))}</b>
+             <span class="muted tiny"> — ${fmt(h.date)}</span></div>`
+        : `<div class="card"><b style="color:var(--bad)">Dropped a tier</b>
+             <span class="muted tiny"> — week of ${fmt(h.week)}, four bad weeks running</span></div>`
+    ).join(''));
+  }
+}
+
+/* ======================= REWARDS ======================= */
+function viewRewards(root){
+  const led=rewardLedger();
+  const held=led.filter(r=>r.state==='held');
+  root.insertAdjacentHTML('beforeend',`<h1>Rewards</h1>
+    <p class="muted tiny">What the member has earned, and the tier that earned it. A demotion takes
+    back whatever that tier bought. ${S.role==='A'?'You can also take one back or hand it back by hand.':''}</p>`);
+
+  if(!led.length){
+    root.insertAdjacentHTML('beforeend',
+      `<div class="empty">Nothing earned yet.${S.role==='A'?' Write the rewards on the Rules tab.':''}</div>`);
+    return;
+  }
+  root.insertAdjacentHTML('beforeend',
+    `<div class="stats">${stat(String(held.length),'currently held')}
+     ${stat(String(led.filter(r=>r.state==='lost').length),'lost to demotion')}
+     ${stat(String(led.filter(r=>r.state==='revoked').length),'taken back')}</div>`);
+
+  for(const r of led){
+    const c=document.createElement('div'); c.className='card';
+    const badge={held:['HELD','var(--ok)'],lost:['LOST — DEMOTED','var(--bad)'],
+                 revoked:['TAKEN BACK','var(--flag)'],locked:['NOT EARNED YET','var(--muted)']}[r.state];
+    c.style.borderColor = r.state==='held' ? 'var(--ok)' : r.state==='locked' ? 'var(--line)' : badge[1];
+    c.innerHTML=`
+      <div class="row" style="justify-content:space-between">
+        <span class="pill" style="border-color:${badge[1]};color:${badge[1]};font-weight:700">${badge[0]}</span>
+        <span class="muted tiny">earned by <b>${esc(r.name)}</b></span>
+      </div>
+      <p style="font-size:1.06em;margin:8px 0 4px;${r.state==='held'?'':'opacity:.65'}">
+        ${r.reward?esc(r.reward):'<span class="muted">No reward written for this tier.</span>'}</p>
+      ${r.earned?`<p class="tiny muted">Earned ${fmt(r.earned)}${r.lost?` · lost week of ${fmt(r.lost)}`:''}</p>`:''}
+      ${r.revokeNote?`<p class="tiny" style="color:var(--flag)">${esc(r.revokeNote)}</p>`:''}`;
+    if(S.role==='A' && r.state!=='locked'){
+      if(r.state==='held'){
+        btn(c,'Take it back','danger',()=>{
+          sheet(`<h3>Take back the ${esc(r.name)} reward?</h3>`,sh=>{
+            const n=input(sh,'Reason (the member sees this)','');
+            btn(sh,'Take it back','danger',()=>{emit('reward.revoke',{tier:r.tier,note:n.value.trim()});close()});
+            btn(sh,'Cancel','ghost',close);
+          });
+        });
+      } else if(r.state==='revoked'){
+        btn(c,'Give it back','primary',()=>emit('reward.restore',{tier:r.tier}));
+      }
+    }
+    root.appendChild(c);
+  }
+}
+
+/* ======================= REVIEWS ======================= */
+function viewReviews(root){
+  const wk=monday(today()), last=addDays(wk,-7);
+  root.insertAdjacentHTML('beforeend','<h1>Reviews</h1>');
+  for(const w of [wk,last,addDays(last,-7)]) root.appendChild(weekCard(w));
+}
+function weekCard(week){
+  const sub=M.weeks[week], rev=M.reviews[week];
+  const st=statsOver(week,addDays(week,6));
+  const misses=weekMisses(week);
+  const ungraced=misses.filter(m=>!m.graced);
+  const closed=addDays(week,6)<today();
+  const clean=weekClean(week);
+  const aState=auditState(week), locked=graceLocked(week);
+  const c=document.createElement('div'); c.className='card';
+  c.innerHTML=`<div class="row" style="justify-content:space-between">
+      <b>Week of ${fmt(week)}</b>
+      <span class="pill" style="border-color:${clean?'var(--ok)':'var(--bad)'};color:${clean?'var(--ok)':'var(--bad)'}">
+        ${closed?(clean?'CLEAN':'NOT CLEAN'):'in progress'}</span></div>
+    <p class="tiny muted">${st.done}/${st.total} completed · ${st.miss} miss${st.miss===1?'':'es'} · ${st.near} near
+      ${misses.length-ungraced.length?' · '+(misses.length-ungraced.length)+' graced':''}</p>
+    ${sub?`<p class="tiny">Submitted${sub.auto?' automatically at midnight':''}${sub.comment?':':''}</p>
+          ${sub.comment?`<p>${esc(sub.comment)}</p>`:''}`
+         :`<p class="tiny muted">Not submitted${closed?' — will auto-submit':''}.</p>`}
+    ${aState==='open'?`<p class="tiny" style="color:var(--near)"><b>Audit due ${new Date(auditDeadlineTs(week)).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'})}.</b>
+        If no review is posted by then the week closes itself and the member’s progression moves on what is recorded.</p>`:''}
+    ${aState==='closed'?`<p class="tiny" style="color:var(--bad)"><b>Closed at 9am without a review.</b>
+        Progression already moved. Grace can no longer be given unless you reopen it.</p>`:''}
+    ${rev?`<div class="card" style="margin-top:10px;border-color:var(--accent)">
+             <b>The organizer’s review</b><p>${esc(rev.text)}</p></div>`:''}`;
+
+  if(misses.length){
+    c.insertAdjacentHTML('beforeend','<h2 style="font-size:.85em">Misses this week</h2>');
+    for(const m of misses){
+      const r=document.createElement('div');
+      r.className='row'; r.style.justifyContent='space-between';
+      r.style.borderBottom='1px solid var(--line)'; r.style.padding='8px 0';
+      r.innerHTML=`<span style="flex:1;min-width:0">
+          <span style="${m.graced?'text-decoration:line-through;opacity:.6':''}">${esc(m.title)}</span>
+          <span class="muted tiny"> · ${fmt(m.date)}</span>
+          ${m.graced?'<span class="pill graced">GRACED</span>':''}
+        </span>`;
+      if(S.role==='A' && !locked){
+        const b=document.createElement('button');
+        b.className='btn'+(m.graced?' ghost':''); b.style.minHeight='38px'; b.style.padding='6px 12px';
+        b.textContent=m.graced?'Take back':'Give grace';
+        b.onclick=()=>emit(m.graced?'grace.revoke':'grace.grant',{key:m.taskId+'@'+m.date});
+        r.appendChild(b);
+      }
+      c.appendChild(r);
+    }
+    if(S.role==='A'&&ungraced.length){
+      c.insertAdjacentHTML('beforeend',
+        `<p class="tiny" style="color:var(--bad);margin-top:8px"><b>${ungraced.length} ungraced.</b>
+         While any remain, this week is not clean and the member’s current tier starts over.</p>`);
+    }
+  }
+
+  if(S.role==='M' && !sub){
+    const t=input(c,'Anything the organizer should know about a miss before the organizer decides on grace?','','textarea');
+    btn(c,'Submit this week','primary',()=>{
+      sheet(`<h3>Submit week of ${fmt(week)}?</h3>
+             <p>Once submitted <b>you cannot edit this week.</b></p>`,sh=>{
+        btn(sh,'Submit','primary',()=>{emit('week.submit',{week,comment:t.value.trim(),auto:false});close()});
+        btn(sh,'Cancel','ghost',close);
+      });
+    });
+  } else if(S.role==='M' && sub){
+    c.insertAdjacentHTML('beforeend','<p class="tiny muted">Locked — submitted.</p>');
+  }
+  if(S.role==='A' && locked){
+    btn(c,'Reopen this week (override)','ghost',()=>{
+      sheet(`<h3>Reopen week of ${fmt(week)}?</h3>
+             <p>It closed itself at 9am and the member’s progression already moved. Reopening lets you
+             give grace now, which recalculates that week and everything after it.</p>`,sh=>{
+        btn(sh,'Reopen','danger',()=>{emit('audit.reopen',{week});close()});
+        btn(sh,'Leave it','ghost',close);
+      });
+    });
+  }
+  if(S.role==='A' && sub && !rev){
+    const t=input(c,'Your review of the member’s week','','textarea');
+    btn(c,'Post review','primary',()=>{
+      if(!t.value.trim()){alert('Write something first.');return}
+      emit('week.review',{week,text:t.value.trim()});
+    });
+  }
+  return c;
+}
+/** Auto-submit any finished week the member never submitted. Runs on open; the Android
+ *  layer also fires it from a midnight alarm. */
+function autoSubmitClosedWeeks(){
+  if(S.role!=='M') return;
+  let w=monday(addDays(today(),-7)), guard=0;
+  while(guard++<8){
+    if(addDays(w,6)<today() && !M.weeks[w] && statsOver(w,addDays(w,6)).total>0){
+      emit('week.submit',{week:w,comment:'',auto:true});
+    }
+    w=addDays(w,-7);
+  }
+}
+
+/* ======================= TASKS (the organizer’s) ======================= */
+function viewTaskAdmin(root){
+  root.insertAdjacentHTML('beforeend',`<h1>Tasks</h1>
+    <p class="muted tiny">You write every task. The member cannot change any of them. Anything you edit
+    shows up on the member’s list bold and marked so the member looks again.</p>`);
+  btn(root,'Add a task','primary',()=>editTask(null));
+  for(let tier=0; tier<=4; tier++){
+    const def=M.tiers[tier]||{name:tier?'Tier '+tier:'Basics'};
+    const list=liveTasks().filter(t=>t.tier===tier);
+    root.insertAdjacentHTML('beforeend',`<h2>${esc(def.name)}${(tier===0||tier<=P.passed)?' · in Basics':''}${tier===P.working&&tier>0?' · the member is reaching for this':''}</h2>`);
+    if(!list.length){ root.insertAdjacentHTML('beforeend','<p class="tiny muted">Empty.</p>'); continue }
+    for(const t of list){
+      const c=document.createElement('div'); c.className='task';
+      c.innerHTML=`<div class="body"><div class="title">${esc(t.title)}</div>
+        ${t.detail?`<div class="detail">${esc(t.detail)}</div>`:''}
+        <div class="tiny muted" style="margin-top:4px">${t.days&&t.days.length?dayNames(t.days):'every day'}</div></div>`;
+      c.onclick=()=>editTask(t);
+      root.appendChild(c);
+    }
+  }
+}
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dayNames=a=>a.map(d=>DN[d]).join(', ');
+function editTask(t){
+  sheet(`<h3>${t?'Edit task':'New task'}</h3>`,s=>{
+    const ti=input(s,'Task',t?t.title:'');
+    const de=input(s,'What done actually means',t?t.detail:'','textarea');
+    const tr=select(s,'Belongs to',[0,1,2,3,4].map(n=>[n,(M.tiers[n]||{}).name||('Tier '+n)]), t?t.tier:0);
+    s.insertAdjacentHTML('beforeend','<label>Days</label>');
+    const row=document.createElement('div'); row.className='row'; s.appendChild(row);
+    const picked=new Set(t&&t.days?t.days:[]);
+    DN.forEach((n,i)=>{
+      const b=document.createElement('button'); b.className='btn'+(picked.has(i)?' primary':'');
+      b.textContent=n; b.style.padding='8px 10px'; b.style.minHeight='40px';
+      b.onclick=()=>{picked.has(i)?picked.delete(i):picked.add(i);
+        b.className='btn'+(picked.has(i)?' primary':'')};
+      row.appendChild(b);
+    });
+    s.insertAdjacentHTML('beforeend','<p class="tiny muted">No days selected means every day.</p>');
+    btn(s,t?'Save changes':'Add task','primary',()=>{
+      if(!ti.value.trim()){alert('Give it a name.');return}
+      const days=[...picked].sort();
+      if(t) emit('task.update',{id:t.id,title:ti.value.trim(),detail:de.value.trim(),tier:+tr.value,days});
+      else  emit('task.create',{id:uid(),title:ti.value.trim(),detail:de.value.trim(),tier:+tr.value,days,order:Date.now()%100000,from:today()});
+      close();
+    });
+    if(t) btn(s,'Delete','danger',()=>{emit('task.delete',{id:t.id,date:today()});close()});
+    btn(s,'Cancel','ghost',close);
+  });
+}
+
+/* ======================= SETTINGS ======================= */
+const THEMES=[['slate','Slate'],['paper','Paper'],['ink','Ink — high contrast'],['linen','Linen'],
+              ['forest','Forest'],['plum','Plum'],['ocean','Ocean']];
+const ACCENTS=['#4c8dff','#59c08a','#b57bff','#ff8a3d','#e3564c','#38b6d9','#e0b54a','#ff5fa2'];
+function viewSettings(root){
+  root.insertAdjacentHTML('beforeend','<h1>Settings</h1><h2>Theme</h2>');
+  const tw=document.createElement('div'); tw.className='row';
+  THEMES.forEach(([k,label])=>{
+    const b=document.createElement('button');
+    b.className='btn'+(S.local.theme===k?' primary':''); b.textContent=label;
+    b.onclick=()=>{S.local.theme=k;save();render()};
+    tw.appendChild(b);
+  });
+  root.appendChild(tw);
+
+  root.insertAdjacentHTML('beforeend','<h2>Accent colour</h2>');
+  const aw=document.createElement('div'); aw.className='swatches';
+  ACCENTS.forEach(c=>{
+    const b=document.createElement('div'); b.className='sw'+(S.local.accent===c?' on':'');
+    b.style.background=c; b.onclick=()=>{S.local.accent=c;save();render()};
+    aw.appendChild(b);
+  });
+  const rst=document.createElement('div'); rst.className='sw'; rst.style.background='transparent';
+  rst.textContent='↺'; rst.style.display='flex'; rst.style.alignItems='center'; rst.style.justifyContent='center';
+  rst.onclick=()=>{S.local.accent=null;save();render()};
+  aw.appendChild(rst);
+  root.appendChild(aw);
+
+  root.insertAdjacentHTML('beforeend','<h2>Text size</h2>');
+  const fw=document.createElement('div'); fw.className='row';
+  [['Small',.9],['Normal',1],['Large',1.15],['Larger',1.3],['Largest',1.45]].forEach(([n,v])=>{
+    const b=document.createElement('button');
+    b.className='btn'+(Math.abs((S.local.fontScale||1)-v)<.01?' primary':''); b.textContent=n;
+    b.onclick=()=>{S.local.fontScale=v;save();render()};
+    fw.appendChild(b);
+  });
+  root.appendChild(fw);
+
+  root.insertAdjacentHTML('beforeend','<h2>Notifications</h2>');
+  const nc=document.createElement('div'); nc.className='card';
+  const N=S.local.notif;
+  toggle(nc,'Tasks still incomplete today','dailyIncomplete');
+  const tm=input(nc,'Remind me at',N.dailyTime,'time');
+  tm.onchange=()=>{N.dailyTime=tm.value;save()};
+  if(S.role==='M'){
+    toggle(nc,'The organizer flagged something','flagged');
+    toggle(nc,'The organizer posted a review','reviewed');
+    toggle(nc,'You earned a reward','rewardEarned');
+  }else{
+    toggle(nc,'A week audit is ready to review','auditReady');
+    toggle(nc,'The member submitted a week','reviewed');
+    toggle(nc,'A week closed without your review','weekClosed');
+  }
+  toggle(nc,'Use the relay when the phones are apart','useRelay');
+  if(window.Native&&Native.alarmInfo){
+    let a={}; try{ a=JSON.parse(Native.alarmInfo()||'{}') }catch(e){}
+    nc.insertAdjacentHTML('beforeend',
+      `<p class="tiny muted" style="margin-top:10px">Scheduled on this phone:
+       ${S.role==='M'
+         ? `a nudge at ${esc(a.dailyTime||'20:00')} when anything is still open — ${a.openToday|0} open right now.`
+         : `the week audit just after midnight on Monday, and the 9am bell — ${a.ungracedLastWeek|0} ungraced miss(es) in the last finished week.`}
+       </p>`);
+    btn(nc,'Send a test notification','',()=>{ try{Native.testNotification()}catch(e){alert('Not available here.')} });
+  }
+  nc.insertAdjacentHTML('beforeend',`<p class="tiny muted">Everything is raised on this phone.
+    With the relay off, a flag reaches the member the next time the phones sync over Bluetooth or
+    the same Wi-Fi. Nothing is ever sent to Google.</p>`);
+  root.appendChild(nc);
+  function toggle(parent,label,key){
+    const r=document.createElement('div'); r.className='row';
+    r.style.justifyContent='space-between'; r.style.padding='8px 0';
+    r.innerHTML=`<span>${esc(label)}</span>`;
+    const b=document.createElement('button');
+    b.className='btn'+(N[key]?' primary':''); b.textContent=N[key]?'On':'Off';
+    b.onclick=()=>{N[key]=!N[key];save();render()};
+    r.appendChild(b); parent.appendChild(r);
+  }
+
+  root.insertAdjacentHTML('beforeend','<h2>Sync</h2>');
+  const sc=document.createElement('div'); sc.className='card';
+  sc.innerHTML=`<p class="tiny muted">This phone: <b>${S.role==='A'?'the organizer’s':'the member’s'}</b> ·
+    ${S.events.length} recorded change${S.events.length===1?'':'s'}.</p>`;
+
+  if(window.Native&&Native.listPaired){
+    let info={};
+    try{ info=JSON.parse(Native.listPaired()||'{}') }catch(e){ info={error:'could not read paired phones'} }
+    if(info.needPermission){
+      sc.insertAdjacentHTML('beforeend',
+        `<p class="tiny" style="color:var(--bad)"><b>This phone has not allowed Nearby devices.</b>
+         Sync cannot see the other phone until it does.</p>`);
+      btn(sc,'Allow Nearby devices','primary',()=>{ try{Native.askBtPermission()}catch(e){} });
+    } else if(info.error){
+      sc.insertAdjacentHTML('beforeend',`<p class="tiny" style="color:var(--bad)">${esc(info.error)}.</p>`);
+    } else if(!(info.devices||[]).length){
+      sc.insertAdjacentHTML('beforeend','<p class="tiny" style="color:var(--near)">No paired phones. Pair the two phones once in Android Bluetooth settings first.</p>');
+    } else {
+      const sel=select(sc,'Other phone', info.devices.map(d=>[d.mac,d.name]), S.local.peerMac||'');
+      if(!S.local.peerMac){ S.local.peerMac=sel.value; save() }
+      sel.onchange=()=>{ S.local.peerMac=sel.value; save() };
+    }
+  } else {
+    sc.insertAdjacentHTML('beforeend','<p class="tiny muted">Bluetooth sync runs in the phone app. In this browser preview, use export and import.</p>');
+  }
+
+  // tailnet address of the other phone — the fallback for when they are apart
+  if(window.Native&&Native.syncNow){
+    const ip=input(sc,"Other phone's tailnet address (optional)", S.local.peerIp||'');
+    ip.placeholder='100.x.x.x';
+    ip.onchange=()=>{ S.local.peerIp=ip.value.trim(); save() };
+    sc.insertAdjacentHTML('beforeend',
+      `<p class="tiny muted">Leave blank and sync is Bluetooth only. Fill it in once both phones
+       are on your tailnet and it will fall back to that when Bluetooth finds nobody — which is
+       how a flag reaches the member when the member is not in the house.</p>`);
+  }
+
+  const status=el('div','tiny muted'); status.id='syncstatus';
+  btn(sc,'Sync now','primary',()=>{
+    if(!(window.Native&&(Native.syncNow||Native.syncBluetooth))){
+      alert('Sync runs in the phone app. Use export and import here.'); return;
+    }
+    if(window.Native&&Native.needsBtPermission&&Native.needsBtPermission()&&!(S.local.peerIp||'')){
+      status.textContent='This phone has not allowed Nearby devices yet — allow it above, then tap Sync.';
+      status.style.color='var(--bad)';
+      try{Native.askBtPermission()}catch(e){}
+      return;
+    }
+    status.textContent='Listening for the other phone. Have them tap Sync too — you have about two and a half minutes.';
+    status.style.color='var(--near)';
+    const payload=JSON.stringify({events:S.events,lamport:S.lamport});
+    window.__sentCount=S.events.length;
+    if(Native.syncNow) Native.syncNow(S.local.peerMac||'', S.local.peerIp||'', payload, S.role||'A');
+    else Native.syncBluetooth(S.local.peerMac||'', payload);
+  });
+  sc.appendChild(status);
+
+  btn(sc,'Export','',()=>{
+    const blob=new Blob([JSON.stringify({events:S.events,lamport:S.lamport},null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='chore-ladder-'+today()+'.json'; a.click();
+  });
+  btn(sc,'Import / merge','',()=>{
+    sheet('<h3>Merge from the other phone</h3><p class="tiny muted">Paste the exported file. Nothing is overwritten — the two logs merge.</p>',s2=>{
+      const t=input(s2,'JSON','','textarea');
+      btn(s2,'Merge','primary',()=>{ try{ mergeIn(JSON.parse(t.value)); close() }catch(e){ alert('Could not read that: '+e.message) } });
+      btn(s2,'Cancel','ghost',close);
+    });
+  });
+  root.appendChild(sc);
+}
+
+/** Status line while the shell is still trying a transport. */
+window.__syncProgress=function(msg){
+  const st=document.getElementById('syncstatus');
+  if(st){ st.textContent=msg; st.style.color='var(--near)' }
+};
+
+/** Called by the Android shell when an exchange finishes, either transport. */
+window.__syncDone=function(ok,msg,b64){
+  const st=document.getElementById('syncstatus');
+  if(!ok){ if(st){ st.textContent=msg; st.style.color='var(--bad)' } else alert(msg); return }
+  let added=0, got=0;
+  try{
+    const json=decodeURIComponent(escape(atob(b64)));     // base64 -> UTF-8
+    const parsed=JSON.parse(json);
+    got=(parsed.events||[]).length;
+    added=mergeIn(parsed,true);
+  }catch(e){
+    if(st){ st.textContent='Connected, but the data would not read: '+e.message; st.style.color='var(--bad)' }
+    return;
+  }
+  // Report BOTH directions. "0 new" alone is ambiguous — it can mean the other
+  // phone was empty, or that nothing of ours ever left. These numbers separate them.
+  const sent=window.__sentCount|0;
+  const s2=document.getElementById('syncstatus');
+  if(s2){
+    s2.textContent=`Synced with ${msg}. Sent ${sent}, received ${got}, of which ${added} ${added===1?'was':'were'} new.`;
+    s2.style.color = (sent===0 && got===0) ? 'var(--bad)' : 'var(--ok)';
+    if(sent===0) s2.textContent+=' This phone had nothing to send.';
+  }
+};
+
+/** Union by event id; Lamport clock jumps past anything seen. */
+function mergeIn(other,quiet){
+  if(!other||!Array.isArray(other.events)) throw new Error('no events in that file');
+  const have=new Set(S.events.map(e=>e.id));
+  let added=0, maxLam=S.lamport;
+  for(const e of other.events){
+    if(!e||!e.id) continue;
+    if(e.lam>maxLam) maxLam=e.lam;
+    if(have.has(e.id)) continue;
+    S.events.push(e); have.add(e.id); added++;
+  }
+  S.lamport=maxLam;
+  save(); render();
+  if(!quiet) alert(added+' change'+(added===1?'':'s')+' merged.');
+  return added;
+}
+
+/* ---------- small helpers ---------- */
+function el(tag,cls,txt){
+  const e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(txt!=null)e.textContent=txt;
+  return e;
+}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sheet(html,build){ const s=$('sheet'); s.innerHTML=html; build&&build(s); $('shade').classList.add('on') }
+function close(){ $('shade').classList.remove('on') }
+$('shade').addEventListener('click',e=>{ if(e.target===$('shade')) close() });
+function btn(parent,label,cls,fn){
+  const b=document.createElement('button');
+  b.className='btn'+(cls?' '+cls:''); b.textContent=label; b.style.marginTop='10px';
+  b.style.marginRight='8px'; b.onclick=e=>{e.stopPropagation();fn()};
+  parent.appendChild(b); return b;
+}
+function input(parent,label,value,type){
+  parent.insertAdjacentHTML('beforeend',`<label>${esc(label)}</label>`);
+  const el=document.createElement(type==='textarea'?'textarea':'input');
+  if(type&&type!=='textarea') el.type=type;
+  el.value=value==null?'':value; parent.appendChild(el); return el;
+}
+function select(parent,label,opts,value){
+  parent.insertAdjacentHTML('beforeend',`<label>${esc(label)}</label>`);
+  const el=document.createElement('select');
+  for(const [v,n] of opts){ const o=document.createElement('option'); o.value=v; o.textContent=n;
+    if(String(v)===String(value)) o.selected=true; el.appendChild(o) }
+  parent.appendChild(el); return el;
+}
+
+/* ---------- boot ---------- */
+load();
+live();
+autoSubmitClosedWeeks();
+raiseNotifications();
+render();
+pushAlarmState();
+window.__hh={S,model,statusOf,dayStatus,statsOver,progression,reqWeeks,weekMisses,auditState,auditDeadlineTs,pendingNotifications,rewardLedger,
+             weekClean,isGraced,mergeIn,emit,get M(){return M}, today,addDays,monday};
+</script>
+</body>
+</html>
